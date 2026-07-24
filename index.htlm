@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Dino Offline Game</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#f7f7f7;
+    font-family:Arial;
+    overflow:hidden;
+}
+
+#game{
+    width:800px;
+    height:300px;
+    background:white;
+    border:2px solid #333;
+    margin:50px auto;
+    position:relative;
+    overflow:hidden;
+}
+
+#ground{
+    position:absolute;
+    bottom:30px;
+    width:100%;
+    height:3px;
+    background:#333;
+}
+
+#dino{
+    position:absolute;
+    width:40px;
+    height:50px;
+    background:#333;
+    bottom:33px;
+    left:50px;
+    border-radius:5px;
+}
+
+#dino:before{
+    content:"";
+    position:absolute;
+    width:10px;
+    height:10px;
+    background:white;
+    right:7px;
+    top:10px;
+    border-radius:50%;
+}
+
+.cactus{
+    position:absolute;
+    width:25px;
+    height:50px;
+    background:#228B22;
+    bottom:33px;
+    right:-30px;
+}
+
+#score{
+    position:absolute;
+    top:10px;
+    right:20px;
+    font-size:22px;
+}
+
+#gameOver{
+    display:none;
+    position:absolute;
+    top:100px;
+    width:100%;
+    text-align:center;
+    font-size:30px;
+}
+
+button{
+    padding:10px 20px;
+    font-size:18px;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div id="game">
+
+<div id="score">
+Score : 0
+</div>
+
+<div id="dino"></div>
+
+<div id="ground"></div>
+
+<div id="gameOver">
+    Game Over<br>
+    <button onclick="restart()">Rejouer</button>
+</div>
+
+</div>
+
+
+<script>
+
+const dino = document.getElementById("dino");
+const game = document.getElementById("game");
+const scoreText = document.getElementById("score");
+const gameOver = document.getElementById("gameOver");
+
+let jumping=false;
+let score=0;
+let speed=5;
+let alive=true;
+
+
+// SAUT
+
+function jump(){
+
+if(jumping || !alive) return;
+
+jumping=true;
+
+let height=0;
+
+let up=setInterval(()=>{
+
+height+=8;
+dino.style.bottom=33+height+"px";
+
+if(height>=120){
+
+clearInterval(up);
+
+let down=setInterval(()=>{
+
+height-=8;
+dino.style.bottom=33+height+"px";
+
+if(height<=0){
+
+clearInterval(down);
+dino.style.bottom="33px";
+jumping=false;
+
+}
+
+},20);
+
+}
+
+},20);
+
+}
+
+
+document.addEventListener("keydown",e=>{
+
+if(e.code==="Space"){
+jump();
+}
+
+});
+
+
+game.addEventListener("click",jump);
+
+
+// CREATION OBSTACLE
+
+function createCactus(){
+
+if(!alive)return;
+
+let cactus=document.createElement("div");
+cactus.className="cactus";
+
+game.appendChild(cactus);
+
+
+let position=800;
+
+
+let move=setInterval(()=>{
+
+position-=speed;
+
+cactus.style.left=position+"px";
+
+
+let dinoBox=dino.getBoundingClientRect();
+let cactusBox=cactus.getBoundingClientRect();
+
+
+if(
+cactusBox.left < dinoBox.right &&
+cactusBox.right > dinoBox.left &&
+cactusBox.top < dinoBox.bottom &&
+cactusBox.bottom > dinoBox.top
+){
+
+endGame();
+
+}
+
+
+if(position<-40){
+
+clearInterval(move);
+cactus.remove();
+score++;
+scoreText.innerHTML="Score : "+score;
+
+if(score%5===0){
+speed++;
+}
+
+}
+
+},20);
+
+
+setTimeout(createCactus,Math.random()*2000+1000);
+
+}
+
+
+createCactus();
+
+
+// FIN DU JEU
+
+function endGame(){
+
+alive=false;
+
+gameOver.style.display="block";
+
+}
+
+
+function restart(){
+
+location.reload();
+
+}
+
+
+</script>
+
+</body>
+</html>
