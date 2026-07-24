@@ -118,7 +118,44 @@ position:relative;
 overflow:hidden;
 
 }
+#game::before{
 
+content:"";
+
+position:absolute;
+
+bottom:40px;
+
+left:0;
+
+width:200%;
+
+height:120px;
+
+background:linear-gradient(transparent,#9acd32);
+
+animation:paysage 8s linear infinite;
+
+z-index:0;
+
+}
+
+
+@keyframes paysage{
+
+from{
+
+transform:translateX(0);
+
+}
+
+to{
+
+transform:translateX(-50%);
+
+}
+
+}
 
 
 .dark #game{
@@ -185,12 +222,20 @@ bottom:40px;
 left:90px;
 
 }
-#capybara{
+
+  #capybara{
 
 animation:courir .3s infinite alternate;
 
 }
+#capybara,
+#score,
+#ground,
+#message{
 
+z-index:5;
+
+}
 
 @keyframes courir{
 
@@ -458,8 +503,245 @@ transform:translateY(400px) rotate(720deg);
 }
 
 }
+/* FEE */
+
+.fee{
+
+position:absolute;
+
+font-size:35px;
+
+z-index:3;
+
+}
 
 
+/* ETOILES */
+
+.star{
+
+position:absolute;
+
+width:4px;
+
+height:4px;
+
+background:white;
+
+border-radius:50%;
+
+z-index:1;
+
+}
+/* ===== PAYSAGE ===== */
+
+
+/* arbres */
+
+.tree{
+
+position:absolute;
+
+bottom:40px;
+
+width:25px;
+
+height:70px;
+
+background:#8b4513;
+
+border-radius:5px;
+
+z-index:1;
+
+}
+
+
+.tree::before{
+
+content:"";
+
+position:absolute;
+
+width:70px;
+
+height:70px;
+
+background:#228b22;
+
+border-radius:50%;
+
+left:-22px;
+
+top:-35px;
+
+}
+
+
+
+/* fleurs */
+
+
+.flower{
+
+position:absolute;
+
+bottom:45px;
+
+font-size:20px;
+
+z-index:2;
+
+}
+
+
+
+/* montagnes */
+
+
+.mountain{
+
+position:absolute;
+
+bottom:40px;
+
+width:200px;
+
+height:100px;
+
+background:#777;
+
+clip-path:polygon(50% 0,100% 100%,0 100%);
+
+z-index:0;
+
+}
+/* CAPYBARA COURSE */
+
+#capybara.step .leg1{
+
+transform:rotate(25deg);
+
+}
+
+
+#capybara.step .leg2{
+
+transform:rotate(-25deg);
+
+}
+
+
+
+/* POUSSIERE */
+
+.dust{
+
+position:absolute;
+
+width:8px;
+
+height:8px;
+
+background:#c2b280;
+
+border-radius:50%;
+
+animation:dust 0.6s forwards;
+
+z-index:1;
+
+}
+
+
+@keyframes dust{
+
+
+from{
+
+transform:scale(1);
+
+opacity:1;
+
+}
+
+
+to{
+
+transform:translateX(-30px) scale(0);
+
+opacity:0;
+
+}
+
+
+}
+
+
+
+
+/* LUNE */
+
+
+.moon{
+
+display:none;
+
+position:absolute;
+
+right:80px;
+
+top:40px;
+
+width:60px;
+
+height:60px;
+
+background:#fff;
+
+border-radius:50%;
+
+box-shadow:0 0 30px white;
+
+}
+
+
+.dark .moon{
+
+display:block;
+
+}
+
+
+
+/* VICTOIRE */
+
+
+@keyframes victory{
+
+
+0%{
+
+transform:scale(1);
+
+}
+
+
+50%{
+
+transform:scale(1.02);
+
+}
+
+
+100%{
+
+transform:scale(1);
+
+}
+
+
+}  
 </style>
 
 </head>
@@ -566,6 +848,9 @@ createCactus();
 
 createCloud();
 
+startLandscape();
+
+startEffects();  
 
 }
 
@@ -675,7 +960,7 @@ let cactus=document.createElement("div");
 
 
 cactus.className="cactus";
-
+randomCactusSize(cactus);
 
 game.appendChild(cactus);
 
@@ -741,8 +1026,10 @@ speed+=0.15;
 
 scoreText.innerHTML="Distance : "+score;
 
-
-
+if(score === 80){
+    createFee();
+}
+changeTime();
 // MODE SOMBRE
 
 if(score==50){
@@ -787,8 +1074,216 @@ setTimeout(createCactus,temps);
 
 
 
+/* =========================
+        PARTIE 3.1
+========================= */
 
-// NUAGE
+
+// 🧚 CREATION DES FEES
+
+let feeStarted = false;
+
+
+function createFee(){
+
+if(!alive) return;
+
+
+let fee = document.createElement("div");
+
+fee.className="fee";
+
+fee.innerHTML="🧚";
+
+game.appendChild(fee);
+
+
+
+let position=900;
+
+
+// hauteur aléatoire dans les airs
+
+let hauteur = Math.random()*120 + 100;
+
+fee.style.bottom = hauteur+"px";
+
+
+
+let move=setInterval(()=>{
+
+
+position -= speed;
+
+
+fee.style.left = position+"px";
+
+
+
+// collision avec le capybara
+
+let player = capy.getBoundingClientRect();
+
+let obstacle = fee.getBoundingClientRect();
+
+
+
+if(
+
+player.left < obstacle.right &&
+
+player.right > obstacle.left &&
+
+player.top < obstacle.bottom &&
+
+player.bottom > obstacle.top
+
+){
+
+gameOver();
+
+}
+
+
+
+if(position < -50){
+
+
+clearInterval(move);
+
+fee.remove();
+
+
+}
+
+
+
+},20);
+
+
+
+// prochaine fée
+
+if(alive){
+
+setTimeout(createFee,Math.random()*4000+3000);
+
+}
+
+
+}
+
+
+
+
+// 🌅 TRANSITION JOUR / NUIT
+
+
+function changeTime(){
+
+
+if(score >= 120){
+
+
+document.body.style.background="#111";
+
+
+game.style.background=
+
+"linear-gradient(#111,#222)";
+
+
+
+// étoiles
+
+createStars();
+
+
+}
+
+else if(score >= 100){
+
+
+game.style.background=
+
+"linear-gradient(#ff9966,#444)";
+
+
+}
+
+
+}
+
+
+
+
+
+// ⭐ CREATION DES ETOILES
+
+
+function createStars(){
+
+
+for(let i=0;i<40;i++){
+
+
+let star=document.createElement("div");
+
+
+star.className="star";
+
+
+star.style.left=Math.random()*900+"px";
+
+star.style.top=Math.random()*150+"px";
+
+
+game.appendChild(star);
+
+
+}
+
+
+}
+
+
+
+
+
+// 🌵 CACTUS ALEATOIRES
+
+
+function randomCactusSize(cactus){
+
+
+let taille=Math.random();
+
+
+if(taille < 0.5){
+
+
+cactus.style.height="25px";
+
+cactus.style.width="10px";
+
+
+}
+
+else{
+
+
+cactus.style.height="45px";
+
+cactus.style.width="15px";
+
+
+}
+
+
+
+}
+
+    // NUAGE
 
 
 function createCloud(){
@@ -854,8 +1349,391 @@ setTimeout(createCloud,3000);
 
 
 
+/* =========================
+        PARTIE 3.2
+   PAYSAGE QUI DEFILENT
+========================= */
 
 
+// 🌲 CREATION DES ARBRES
+
+
+function createTree(){
+
+
+if(!alive) return;
+
+
+let tree=document.createElement("div");
+
+tree.className="tree";
+
+game.appendChild(tree);
+
+
+
+let position=900;
+
+
+tree.style.left=position+"px";
+
+
+
+let taille=Math.random()*30+50;
+
+tree.style.height=taille+"px";
+
+
+
+let move=setInterval(()=>{
+
+
+position-=speed/2;
+
+
+tree.style.left=position+"px";
+
+
+
+if(position<-80){
+
+
+clearInterval(move);
+
+tree.remove();
+
+
+}
+
+
+
+},20);
+
+
+
+if(alive){
+
+setTimeout(createTree,Math.random()*4000+3000);
+
+}
+
+
+}
+
+
+
+
+
+// 🌼 CREATION DES FLEURS
+
+
+function createFlower(){
+
+
+if(!alive)return;
+
+
+
+let flower=document.createElement("div");
+
+
+flower.className="flower";
+
+
+flower.innerHTML="🌼";
+
+
+game.appendChild(flower);
+
+
+
+let position=900;
+
+
+let move=setInterval(()=>{
+
+
+position-=speed;
+
+
+flower.style.left=position+"px";
+
+
+
+if(position<-50){
+
+
+flower.remove();
+
+clearInterval(move);
+
+
+}
+
+
+},20);
+
+
+
+if(alive){
+
+setTimeout(createFlower,Math.random()*3000+2000);
+
+}
+
+
+}
+
+
+
+
+
+// ⛰️ MONTAGNES EN ARRIERE PLAN
+
+
+function createMountain(){
+
+
+let mountain=document.createElement("div");
+
+
+mountain.className="mountain";
+
+
+game.appendChild(mountain);
+
+
+let position=900;
+
+
+let move=setInterval(()=>{
+
+
+position-=speed/3;
+
+
+mountain.style.left=position+"px";
+
+
+
+if(position<-250){
+
+
+mountain.remove();
+
+clearInterval(move);
+
+
+}
+
+
+
+},20);
+
+
+
+}
+
+
+
+
+
+// 🌳 LANCEMENT DU PAYSAGE
+
+
+function startLandscape(){
+
+
+createTree();
+
+createFlower();
+
+createMountain();
+
+
+}
+/* =========================
+        PARTIE 3.3
+ CAPYBARA + NUIT + EFFETS
+========================= */
+
+
+
+// 🐹 ANIMATION DE COURSE
+
+
+function animateCapy(){
+
+
+if(!alive)return;
+
+
+capy.classList.toggle("step");
+
+
+setTimeout(animateCapy,250);
+
+
+}
+
+
+
+
+
+// 💨 POUSSIERE
+
+
+function createDust(){
+
+
+if(!alive)return;
+
+
+
+let dust=document.createElement("div");
+
+
+dust.className="dust";
+
+
+game.appendChild(dust);
+
+
+
+let x=capy.offsetLeft;
+
+
+let y=capy.offsetTop+45;
+
+
+
+dust.style.left=x+"px";
+
+dust.style.top=y+"px";
+
+
+
+setTimeout(()=>{
+
+dust.remove();
+
+},600);
+
+
+
+}
+
+
+
+
+
+// LANCEMENT POUSSIERE
+
+
+setInterval(()=>{
+
+
+if(alive){
+
+createDust();
+
+}
+
+
+},300);
+
+
+
+
+
+// 🌙 CREATION DE LA LUNE
+
+
+function createMoon(){
+
+
+let moon=document.createElement("div");
+
+
+moon.className="moon";
+
+
+game.appendChild(moon);
+
+
+
+}
+
+
+
+
+
+
+// ⭐ ETOILES ANIMEES
+
+
+function animateStars(){
+
+
+let stars=document.querySelectorAll(".star");
+
+
+stars.forEach(star=>{
+
+
+star.style.opacity=
+
+Math.random();
+
+
+
+});
+
+
+}
+
+
+
+setInterval(()=>{
+
+
+animateStars();
+
+
+},500);
+
+
+
+
+
+// 🎉 VICTOIRE AMELIOREE
+
+
+function victoryEffect(){
+
+
+game.style.animation="victory 1s infinite";
+
+
+}
+
+
+
+
+
+// DEMARRAGE DES EFFETS
+
+
+function startEffects(){
+
+
+animateCapy();
+
+
+createMoon();
+
+
+}
 // FIN DU JEU
 
 
