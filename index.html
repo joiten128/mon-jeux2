@@ -2,250 +2,546 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Dino Offline Game</title>
+<title>Dino Adventure</title>
 
 <style>
+
 *{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
+margin:0;
+padding:0;
+box-sizing:border-box;
 }
 
 body{
-    background:#f7f7f7;
-    font-family:Arial;
-    overflow:hidden;
+background:#eeeeee;
+font-family:Arial;
+overflow:hidden;
+transition:1s;
+}
+
+body.dark{
+background:#111;
 }
 
 #game{
-    width:800px;
-    height:300px;
-    background:white;
-    border:2px solid #333;
-    margin:50px auto;
-    position:relative;
-    overflow:hidden;
+
+width:900px;
+height:350px;
+
+background:linear-gradient(#fff,#eee);
+
+border:3px solid #222;
+
+margin:40px auto;
+
+position:relative;
+
+overflow:hidden;
+
+border-radius:10px;
+
 }
 
-#ground{
-    position:absolute;
-    bottom:30px;
-    width:100%;
-    height:3px;
-    background:#333;
+.dark #game{
+background:linear-gradient(#111,#333);
+border-color:white;
 }
 
-#dino{
-    position:absolute;
-    width:40px;
-    height:50px;
-    background:#333;
-    bottom:33px;
-    left:50px;
-    border-radius:5px;
-}
-
-#dino:before{
-    content:"";
-    position:absolute;
-    width:10px;
-    height:10px;
-    background:white;
-    right:7px;
-    top:10px;
-    border-radius:50%;
-}
-
-.cactus{
-    position:absolute;
-    width:25px;
-    height:50px;
-    background:#228B22;
-    bottom:33px;
-    right:-30px;
-}
 
 #score{
-    position:absolute;
-    top:10px;
-    right:20px;
-    font-size:22px;
+
+position:absolute;
+top:15px;
+right:20px;
+
+font-size:25px;
+font-weight:bold;
+
 }
 
-#gameOver{
-    display:none;
-    position:absolute;
-    top:100px;
-    width:100%;
-    text-align:center;
-    font-size:30px;
+
+#dino{
+
+position:absolute;
+
+width:45px;
+height:55px;
+
+background:#333;
+
+bottom:40px;
+left:80px;
+
+border-radius:8px;
+
 }
+
+
+
+#dino:after{
+
+content:"";
+
+position:absolute;
+
+width:10px;
+height:10px;
+
+background:white;
+
+right:8px;
+top:10px;
+
+border-radius:50%;
+
+}
+
+
+.jump{
+
+animation:jump .7s;
+
+}
+
+
+@keyframes jump{
+
+0%{bottom:40px}
+
+50%{bottom:170px}
+
+100%{bottom:40px}
+
+}
+
+
+
+.cactus{
+
+position:absolute;
+
+bottom:40px;
+
+width:35px;
+
+height:70px;
+
+background:#168000;
+
+border-radius:5px;
+
+}
+
+
+.cactus:before{
+
+content:"";
+
+position:absolute;
+
+width:15px;
+height:30px;
+
+background:#168000;
+
+left:-12px;
+top:25px;
+
+}
+
+
+#ground{
+
+position:absolute;
+
+bottom:35px;
+
+height:5px;
+
+width:100%;
+
+background:#222;
+
+}
+
+
+
+.cloud{
+
+position:absolute;
+
+top:50px;
+
+width:80px;
+
+height:30px;
+
+background:white;
+
+border-radius:30px;
+
+opacity:.8;
+
+}
+
+
+
+#message{
+
+display:none;
+
+position:absolute;
+
+top:110px;
+
+width:100%;
+
+text-align:center;
+
+font-size:40px;
+
+font-weight:bold;
+
+}
+
+
 
 button{
-    padding:10px 20px;
-    font-size:18px;
-    cursor:pointer;
+
+padding:12px 25px;
+
+font-size:20px;
+
+border:0;
+
+border-radius:10px;
+
+cursor:pointer;
+
 }
+
+
+
+.confetti{
+
+position:absolute;
+
+width:10px;
+height:10px;
+
+animation:fall 2s linear;
+
+}
+
+
+
+@keyframes fall{
+
+to{
+
+transform:translateY(400px) rotate(360deg);
+
+}
+
+}
+
+
+
 </style>
+
 </head>
+
 
 <body>
 
+
 <div id="game">
 
+
 <div id="score">
-Score : 0
+Distance : 0
 </div>
+
 
 <div id="dino"></div>
 
+
 <div id="ground"></div>
 
-<div id="gameOver">
-    Game Over<br>
-    <button onclick="restart()">Rejouer</button>
-</div>
+
+<div id="message">
+
+GAME OVER 😵<br>
+
+<button onclick="restart()">
+Rejouer
+</button>
 
 </div>
+
+
+</div>
+
 
 
 <script>
 
-const dino = document.getElementById("dino");
-const game = document.getElementById("game");
-const scoreText = document.getElementById("score");
-const gameOver = document.getElementById("gameOver");
 
-let jumping=false;
+let dino=document.querySelector("#dino");
+
+let game=document.querySelector("#game");
+
+let scoreText=document.querySelector("#score");
+
+let message=document.querySelector("#message");
+
+
 let score=0;
-let speed=5;
+
+let speed=6;
+
 let alive=true;
 
 
-// SAUT
+
+// saut
 
 function jump(){
 
-if(jumping || !alive) return;
+if(!alive)return;
 
-jumping=true;
+if(!dino.classList.contains("jump")){
 
-let height=0;
+dino.classList.add("jump");
 
-let up=setInterval(()=>{
+setTimeout(()=>{
 
-height+=8;
-dino.style.bottom=33+height+"px";
+dino.classList.remove("jump");
 
-if(height>=120){
-
-clearInterval(up);
-
-let down=setInterval(()=>{
-
-height-=8;
-dino.style.bottom=33+height+"px";
-
-if(height<=0){
-
-clearInterval(down);
-dino.style.bottom="33px";
-jumping=false;
+},700);
 
 }
-
-},20);
-
-}
-
-},20);
 
 }
 
 
 document.addEventListener("keydown",e=>{
 
-if(e.code==="Space"){
-jump();
-}
+if(e.code=="Space")jump();
 
 });
 
 
-game.addEventListener("click",jump);
+game.onclick=jump;
 
 
-// CREATION OBSTACLE
 
-function createCactus(){
+// nuages
 
-if(!alive)return;
+function cloud(){
 
-let cactus=document.createElement("div");
-cactus.className="cactus";
+let c=document.createElement("div");
 
-game.appendChild(cactus);
+c.className="cloud";
+
+c.style.left="900px";
+
+game.appendChild(c);
 
 
-let position=800;
+let x=900;
 
 
 let move=setInterval(()=>{
 
-position-=speed;
+x-=2;
 
-cactus.style.left=position+"px";
-
-
-let dinoBox=dino.getBoundingClientRect();
-let cactusBox=cactus.getBoundingClientRect();
+c.style.left=x+"px";
 
 
-if(
-cactusBox.left < dinoBox.right &&
-cactusBox.right > dinoBox.left &&
-cactusBox.top < dinoBox.bottom &&
-cactusBox.bottom > dinoBox.top
-){
-
-endGame();
-
-}
-
-
-if(position<-40){
+if(x<-100){
 
 clearInterval(move);
-cactus.remove();
-score++;
-scoreText.innerHTML="Score : "+score;
 
-if(score%5===0){
-speed++;
-}
+c.remove();
 
 }
 
 },20);
 
 
-setTimeout(createCactus,Math.random()*2000+1000);
+setTimeout(cloud,3000);
+
+}
+
+cloud();
+
+
+
+
+// cactus
+
+
+function cactus(){
+
+
+if(!alive)return;
+
+
+let c=document.createElement("div");
+
+c.className="cactus";
+
+game.appendChild(c);
+
+
+let x=900;
+
+
+let move=setInterval(()=>{
+
+
+x-=speed;
+
+c.style.left=x+"px";
+
+
+
+let d=dino.getBoundingClientRect();
+
+let o=c.getBoundingClientRect();
+
+
+
+if(
+
+d.left<o.right &&
+
+d.right>o.left &&
+
+d.bottom>o.top
+
+){
+
+gameOver();
 
 }
 
 
-createCactus();
+
+if(x<-50){
+
+c.remove();
+
+clearInterval(move);
+
+score++;
+
+speed+=0.15;
 
 
-// FIN DU JEU
+scoreText.innerHTML="Distance : "+score;
 
-function endGame(){
+
+if(score==50){
+
+document.body.classList.add("dark");
+
+}
+
+
+
+if(score>=100){
+
+win();
+
+}
+
+
+}
+
+
+},20);
+
+
+
+setTimeout(cactus,1200);
+
+}
+
+
+cactus();
+
+
+
+
+// fin
+
+
+function gameOver(){
 
 alive=false;
 
-gameOver.style.display="block";
+message.style.display="block";
+
+message.innerHTML=
+
+"GAME OVER 😵<br><br>"+
+
+"Score : "+score+
+
+"<br><br><button onclick='restart()'>Rejouer</button>";
 
 }
+
+
+
+
+function win(){
+
+alive=false;
+
+message.style.display="block";
+
+
+message.innerHTML=
+
+"VICTOIRE 🎉🏆<br><br>"+
+
+"100 mètres parcourus !";
+
+
+confetti();
+
+}
+
+
+
+
+function confetti(){
+
+for(let i=0;i<100;i++){
+
+let c=document.createElement("div");
+
+c.className="confetti";
+
+c.style.left=Math.random()*900+"px";
+
+c.style.top="0px";
+
+c.style.background=
+"hsl("+Math.random()*360+",100%,50%)";
+
+
+game.appendChild(c);
+
+
+}
+
+}
+
+
 
 
 function restart(){
@@ -256,6 +552,7 @@ location.reload();
 
 
 </script>
+
 
 </body>
 </html>
